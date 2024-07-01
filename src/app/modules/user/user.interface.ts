@@ -9,17 +9,10 @@ export interface IUser {
     address: string;
 }
 
+const USER_ROLE = {
+  user: 'user',
+  admin: 'admin',
+} as const;
 
-export interface UserModel extends Model<IUser> {
-    //instance methods for checking if the user exist
-    isUserExistsByCustomId(id: string): Promise<IUser>;
-    //instance methods for checking if passwords are matched
-    isPasswordMatched(
-      plainTextPassword: string,
-      hashedPassword: string,
-    ): Promise<boolean>;
-    isJWTIssuedBeforePasswordChanged(
-      passwordChangedTimestamp: Date,
-      jwtIssuedTimestamp: number,
-    ): boolean;
-}
+
+export type TUserRole = keyof typeof USER_ROLE;
