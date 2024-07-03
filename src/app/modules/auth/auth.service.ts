@@ -23,9 +23,11 @@ export const signinService = async (payload: TSingnin) => {
     //create token and sent to the  client
   
     const jwtPayload = {
+      _id: user._id,
       email: user.email,
       role: user.role,
     };
+    console.log(jwtPayload)
   
     const accessToken = jwt.sign(jwtPayload, config.JWT_ACCESS_SECRET as string, {
         expiresIn: config.JWT_ACCESS_EXPIRES_IN,

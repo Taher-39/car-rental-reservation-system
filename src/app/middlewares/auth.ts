@@ -16,7 +16,7 @@ const auth = (...requiredRoles: TUserRole[]) => {
     }
     
     const token = authHeader.split(' ')[1];
-    // checking if the token is missing
+    
     if (!token) {
       return res.status(401).json({ success: false, statusCode: 401, message: 'Access denied. No token provided.' })
     }
@@ -30,7 +30,7 @@ const auth = (...requiredRoles: TUserRole[]) => {
     const { role, email } = decoded;
 
     // checking if the user is exist
-    const user = await User.findOne({email}).select('+password')
+    const user = await User.findOne({email})
 
     if (!user) {
       throw new AppError(httpStatus.NOT_FOUND, 'This user is not found');

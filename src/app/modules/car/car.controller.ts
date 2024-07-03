@@ -1,10 +1,10 @@
 import httpStatus from 'http-status';
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
-import { CarService } from './car.service';
+import {  createCar, getAllCars, getCarById, returnCarService, softDeleteCar, updateCar} from './car.service';
 
-const createCarController = catchAsync(async (req, res) => {
-  const result = await CarService.createCar(req.body);
+export const createCarController = catchAsync(async (req, res) => {
+  const result = await createCar(req.body);
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.CREATED,
@@ -13,8 +13,8 @@ const createCarController = catchAsync(async (req, res) => {
   });
 });
 
-const getAllCarsController = catchAsync(async (req, res) => {
-  const result = await CarService.getAllCars();
+export const getAllCarsController = catchAsync(async (req, res) => {
+  const result = await getAllCars();
   if(!result){
     return res.status(httpStatus.NOT_FOUND).json({
           success: false,
@@ -31,9 +31,9 @@ const getAllCarsController = catchAsync(async (req, res) => {
   });
 });
 
-const getSingleCarController = catchAsync(async (req, res) => {
+export const getSingleCarController = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const result = await CarService.getCarById(id);
+  const result = await getCarById(id);
 
   if(!result){
     return res.status(httpStatus.NOT_FOUND).json({
@@ -51,9 +51,9 @@ const getSingleCarController = catchAsync(async (req, res) => {
   });
 });
 
-const updateCarController = catchAsync(async (req, res) => {
+export const updateCarController = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const result = await CarService.updateCar(id, req.body);
+  const result = await updateCar(id, req.body);
   if(!result){
     return res.status(httpStatus.NOT_FOUND).json({
           success: false,
@@ -70,9 +70,9 @@ const updateCarController = catchAsync(async (req, res) => {
   });
 });
 
-const deleteCarController = catchAsync(async (req, res) => {
+export const deleteCarController = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const result = await CarService.softDeleteCar(id);
+  const result = await softDeleteCar(id);
   if(!result){
     return res.status(httpStatus.NOT_FOUND).json({
           success: false,
@@ -89,10 +89,23 @@ const deleteCarController = catchAsync(async (req, res) => {
   });
 });
 
-export {
-  createCarController,
-  getAllCarsController,
-  getSingleCarController,
-  updateCarController,
-  deleteCarController,
-};
+export const returnCarController = catchAsync(async (req, res) => {
+
+  const result = await returnCarService(req.body);
+  if(!result){
+    return res.status(httpStatus.NOT_FOUND).json({
+          success: false,
+          statusCode: 404,
+          message: "No Data Found",
+          data: []
+        })
+  }
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Car returned successfully',
+    data: result,
+  });
+});
+
+
