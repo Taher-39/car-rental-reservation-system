@@ -1,15 +1,15 @@
 {
-    "include": ["src/**/*"],
-    "exclude": ["node_modules"],
-    "compilerOptions": {
-      "target": "es2016",
-      "module": "commonjs",
-      "moduleResolution": "node",
-      "rootDir": "./src",
-      "outDir": "./dist",
-      "strict": true,
-      "esModuleInterop": true,
-      "skipLibCheck": true,
-      "forceConsistentCasingInFileNames": true
-    }
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    "target": "es2016",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
   }
+}

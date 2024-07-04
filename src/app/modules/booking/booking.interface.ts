@@ -7,4 +7,4 @@ export type TBooking = {
   startTime: string;
   endTime: string | null;
   totalCost: number;
-}
+};

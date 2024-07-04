@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose';
 import { IUser } from './user.interface';
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcrypt';
 import config from '../../config';
 
 const userSchema = new Schema<IUser>(
@@ -17,10 +17,10 @@ const userSchema = new Schema<IUser>(
   },
 );
 
-//hash password then save 
+//hash password then save
 userSchema.pre('save', async function (next) {
   // eslint-disable-next-line @typescript-eslint/no-this-alias
-  const user = this; 
+  const user = this;
   user.password = await bcrypt.hash(
     user.password,
     Number(config.BCRYPT_SALT_ROUNDS),
@@ -29,12 +29,11 @@ userSchema.pre('save', async function (next) {
 });
 
 // remove password & __v
-userSchema.methods.toJSON = function() {
+userSchema.methods.toJSON = function () {
   const obj = this.toObject();
   delete obj.password;
   delete obj.__v;
   return obj;
-}
-
+};
 
 export const User = model<IUser>('User', userSchema);

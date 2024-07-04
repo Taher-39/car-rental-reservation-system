@@ -9,7 +9,6 @@ const app: Application = express();
 app.use(express.json());
 app.use(cors());
 
-
 //routing
 app.use('/api', router);
 

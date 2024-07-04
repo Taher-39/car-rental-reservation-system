@@ -1,7 +1,14 @@
 import httpStatus from 'http-status';
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
-import {  createCar, getAllCars, getCarById, returnCarService, softDeleteCar, updateCar} from './car.service';
+import {
+  createCar,
+  getAllCars,
+  getCarById,
+  returnCarService,
+  softDeleteCar,
+  updateCar,
+} from './car.service';
 
 export const createCarController = catchAsync(async (req, res) => {
   const result = await createCar(req.body);
@@ -15,13 +22,13 @@ export const createCarController = catchAsync(async (req, res) => {
 
 export const getAllCarsController = catchAsync(async (req, res) => {
   const result = await getAllCars();
-  if(!result){
+  if (!result) {
     return res.status(httpStatus.NOT_FOUND).json({
-          success: false,
-          statusCode: 404,
-          message: "No Data Found",
-          data: []
-        })
+      success: false,
+      statusCode: 404,
+      message: 'No Data Found',
+      data: [],
+    });
   }
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -35,13 +42,13 @@ export const getSingleCarController = catchAsync(async (req, res) => {
   const { id } = req.params;
   const result = await getCarById(id);
 
-  if(!result){
+  if (!result) {
     return res.status(httpStatus.NOT_FOUND).json({
-          success: false,
-          statusCode: 404,
-          message: "No Data Found",
-          data: []
-        })
+      success: false,
+      statusCode: 404,
+      message: 'No Data Found',
+      data: [],
+    });
   }
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -54,13 +61,13 @@ export const getSingleCarController = catchAsync(async (req, res) => {
 export const updateCarController = catchAsync(async (req, res) => {
   const { id } = req.params;
   const result = await updateCar(id, req.body);
-  if(!result){
+  if (!result) {
     return res.status(httpStatus.NOT_FOUND).json({
-          success: false,
-          statusCode: 404,
-          message: "No Data Found",
-          data: []
-        })
+      success: false,
+      statusCode: 404,
+      message: 'No Data Found',
+      data: [],
+    });
   }
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -73,32 +80,31 @@ export const updateCarController = catchAsync(async (req, res) => {
 export const deleteCarController = catchAsync(async (req, res) => {
   const { id } = req.params;
   const result = await softDeleteCar(id);
-  if(!result){
+  if (!result) {
     return res.status(httpStatus.NOT_FOUND).json({
-          success: false,
-          statusCode: 404,
-          message: "No Data Found",
-          data: []
-        })
+      success: false,
+      statusCode: 404,
+      message: 'No Data Found',
+      data: [],
+    });
   }
   sendResponse(res, {
-      success: true,
-      statusCode: httpStatus.OK,
+    success: true,
+    statusCode: httpStatus.OK,
     message: 'Car deleted successfully',
     data: result,
   });
 });
 
 export const returnCarController = catchAsync(async (req, res) => {
-
   const result = await returnCarService(req.body);
-  if(!result){
+  if (!result) {
     return res.status(httpStatus.NOT_FOUND).json({
-          success: false,
-          statusCode: 404,
-          message: "No Data Found",
-          data: []
-        })
+      success: false,
+      statusCode: 404,
+      message: 'No Data Found',
+      data: [],
+    });
   }
   sendResponse(res, {
     success: true,
@@ -107,5 +113,3 @@ export const returnCarController = catchAsync(async (req, res) => {
     data: result,
   });
 });
-
-

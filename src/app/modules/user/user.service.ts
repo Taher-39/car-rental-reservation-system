@@ -1,6 +1,5 @@
-import { IUser } from "./user.interface";
-import { User } from "./user.model";
-
+import { IUser } from './user.interface';
+import { User } from './user.model';
 
 export const userCreateService = async (payload: IUser) => {
   const result = await User.create(payload);
@@ -13,8 +12,7 @@ export const getAllUserService = async () => {
 };
 
 export const getSingleUserService = async (id: string) => {
-  const result =
-    await User.findById(id)
+  const result = await User.findById(id);
   return result;
 };
 
@@ -22,14 +20,8 @@ export const updateUserService = async (
   id: string,
   payload: Partial<IUser>,
 ) => {
-  const result = await User.findOneAndUpdate(
-    { _id: id },
-    payload,
-    {
-      new: true,
-    },
-  );
+  const result = await User.findOneAndUpdate({ _id: id }, payload, {
+    new: true,
+  });
   return result;
 };
-
-
