@@ -15,13 +15,13 @@ export const createBookingService = async (
 ): Promise<TBooking> => {
   const { date, startTime, carId } = payload;
 
-  // time and date validate
-  if (isPastDateTime(date, startTime)) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'Cannot create booking for past date and time',
-    );
-  }
+  // time and date validate for future
+  // if (isPastDateTime(date, startTime)) {
+  //   throw new AppError(
+  //     httpStatus.BAD_REQUEST,
+  //     'Cannot create booking for past date and time',
+  //   );
+  // }
 
   // handle valid carId and car status
   const car = await Car.findById(carId);
