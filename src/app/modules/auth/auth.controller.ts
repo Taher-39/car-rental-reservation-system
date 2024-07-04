@@ -1,10 +1,22 @@
 import httpStatus from 'http-status';
 import sendResponse from '../../utils/sendResponse';
 import catchAsync from '../../utils/catchAsync';
-import { signinService } from './auth.service';
+import { signInService } from './auth.service';
+import { signUpService } from './auth.service';
 
-export const signinController = catchAsync(async (req, res) => {
-  const { user, accessToken } = await signinService(req.body);
+export const signUpController = catchAsync(async (req, res) => {
+  const result = await signUpService(req.body);
+
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message: 'User registered successfully',
+    data: result,
+  });
+});
+
+export const signInController = catchAsync(async (req, res) => {
+  const { user, accessToken } = await signInService(req.body);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,

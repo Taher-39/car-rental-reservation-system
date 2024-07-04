@@ -5,8 +5,15 @@ import { TSingnin } from './auth.interface';
 import config from '../../config';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+import { IUser } from '../user/user.interface';
 
-export const signinService = async (payload: TSingnin) => {
+export const signUpService = async (payload: IUser) => {
+  const result = await User.create(payload);
+  return result;
+};
+
+
+export const signInService = async (payload: TSingnin) => {
   // checking if the user is exist
   const user = await User.findOne({ email: payload?.email });
 
