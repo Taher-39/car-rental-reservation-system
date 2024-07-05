@@ -34,7 +34,6 @@ export const signInService = async (payload: TSingnin) => {
     email: user.email,
     role: user.role,
   };
-  console.log(jwtPayload);
 
   const accessToken = jwt.sign(jwtPayload, config.JWT_ACCESS_SECRET as string, {
     expiresIn: config.JWT_ACCESS_EXPIRES_IN,

@@ -60,6 +60,18 @@ export const returnCarService = async (
   const startTime = parseFloat(booking.startTime.replace(':', '.'));
   const endTime = parseFloat(payload.endTime.replace(':', '.'));
   const duration = endTime - startTime;
+  
+  // need also date from body and need date and time validation  
+  // if (isPastDateTime(payload.endDate, endTime)) {
+  //   throw new AppError(
+  //     httpStatus.BAD_REQUEST,
+  //     'Cannot update booking for past date and time',
+  //   );
+  // }
+  // if(duration < 0){
+  //   throw new AppError(httpStatus.BAD_REQUEST, 'endTime must gatter than start time.')
+  // }
+
   const car = await Car.findById(booking.car);
 
   if (car) {
