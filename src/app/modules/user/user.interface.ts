@@ -1,11 +1,14 @@
 export interface IUser {
   name: string;
   email: string;
-  role: 'user' | 'admin';
   password: string;
-  phone: string;
-  address: string;
+  confirmPassword: string;
+  phone?: string;
+  image?: string;
+  resetPasswordToken?: string; 
+  resetTokenExpires?: Date;  
 }
+
 
 const USER_ROLE = {
   user: 'user',

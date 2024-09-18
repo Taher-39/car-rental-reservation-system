@@ -44,7 +44,6 @@ NODE_ENV=development
 PORT=5000
 DB_URL='your mongodb url'
 BCRYPT_SALT_ROUNDS='your-salt-rounds'
-DEFAULT_PASS='your default pass'
 JWT_ACCESS_SECRET='your-jwt-key'
 JWT_ACCESS_EXPIRES_IN='your-access-expires'
 ```

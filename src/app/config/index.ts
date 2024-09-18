@@ -8,7 +8,8 @@ export default {
   PORT: process.env.PORT,
   DB_URL: process.env.DB_URL,
   BCRYPT_SALT_ROUNDS: process.env.BCRYPT_SALT_ROUNDS,
-  DEFAULT_PASS: process.env.DEFAULT_PASS,
   JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET,
   JWT_ACCESS_EXPIRES_IN: process.env.JWT_ACCESS_EXPIRES_IN,
+  GMAIL: process.env.GMAIL,
+  GMAIL_PASS: process.env.GMAIL_PASS,
 };
