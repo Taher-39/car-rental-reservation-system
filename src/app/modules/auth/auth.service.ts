@@ -30,7 +30,8 @@ export const signInService = async (payload: TSingnin) => {
   }
 
   //checking if the password is correct
-  const isPasswordMatch = bcrypt.compare(payload?.password, user?.password);
+  const isPasswordMatch = await bcrypt.compare(payload?.password, user?.password);
+  console.log(isPasswordMatch)
   if (!isPasswordMatch) {
     throw new AppError(httpStatus.FORBIDDEN, 'Password do not matched');
   }
@@ -40,6 +41,7 @@ export const signInService = async (payload: TSingnin) => {
   const jwtPayload = {
     _id: user._id,
     email: user.email,
+    role: user.role
   };
 
   const accessToken = jwt.sign(jwtPayload, config.JWT_ACCESS_SECRET as string, {
@@ -53,22 +55,49 @@ export const signInService = async (payload: TSingnin) => {
 };
 
 // Update User Service
-export const updateUserService = async ( payload: Partial<IUser>) => {
+export const updateUserService = async (payload: Partial<IUser>, userRole: string) => {
   const user = await User.findOne({ email: payload?.email });
   if (!user) {
     throw new AppError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  // Restrict role updates to admin users only
+  if (payload.role && userRole !== 'admin') {
+    throw new AppError(httpStatus.FORBIDDEN, 'Only admin can update roles');
   }
 
   // Update user details
   if (payload.name) user.name = payload.name;
   if (payload.phone) user.phone = payload.phone;
   if (payload.image) user.image = payload.image;
-  if (payload.password) user.password = payload.password;
-
+  if (payload.role) user.role = payload.role;
 
   await user.save();
 
   return user;
+};
+
+export const changePasswordService = async (email: string, oldPassword: string, newPassword: string) => {
+  // Find the user by email
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  // Check if the old password is correct
+  const isOldPasswordValid = await bcrypt.compare(oldPassword, user.password);
+  if (!isOldPasswordValid) {
+    throw new AppError(httpStatus.FORBIDDEN, 'Old password is incorrect');
+  }
+
+  // Hash the new password
+  const hashedNewPassword = await bcrypt.hash(newPassword, Number(config.BCRYPT_SALT_ROUNDS));
+  
+  // Update user's password
+  user.password = hashedNewPassword;
+  await user.save();
+
+  return { message: 'Password changed successfully!' };
 };
 
 // Generate Token
@@ -93,7 +122,7 @@ export const forgotPasswordService = async (email: string) => {
   
   await transporter.sendMail({
     to: user.email,
-    from: 'your-email@gmail.com',
+    from: config.GMAIL,
     subject: 'Password Reset',
     text: message,
   });
@@ -117,7 +146,7 @@ export const resetPasswordService = async (token: string, newPassword: string) =
   }
 
   // Update password
-  user.password = await bcrypt.hash(newPassword, 10);
+  user.password = await bcrypt.hash(newPassword, Number(config.BCRYPT_SALT_ROUNDS));
   user.resetPasswordToken = undefined;
   user.resetTokenExpires = undefined;
   await user.save();

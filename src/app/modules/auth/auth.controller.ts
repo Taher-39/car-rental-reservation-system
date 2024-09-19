@@ -1,7 +1,7 @@
 import httpStatus from 'http-status';
 import sendResponse from '../../utils/sendResponse';
 import catchAsync from '../../utils/catchAsync';
-import { forgotPasswordService, resetPasswordService, signInService, updateUserService } from './auth.service';
+import { changePasswordService, forgotPasswordService, resetPasswordService, signInService, updateUserService } from './auth.service';
 import { signUpService } from './auth.service';
 
 export const signUpController = catchAsync(async (req, res) => {
@@ -28,15 +28,30 @@ export const signInController = catchAsync(async (req, res) => {
 });
 
 export const updateUserController = catchAsync(async (req, res) => {
-  const payload = req.body;
+  const { body } = req;
+  const userRole = req.user.role; // Assume req.user contains role information from JWT
 
-  const updatedUser = await updateUserService(payload);
+  const updatedUser = await updateUserService(body, userRole);
 
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
-    message: 'User updated successfully',
-    data: updatedUser,
+    message: 'User updated successfully.',
+    data: updatedUser
+  });
+});
+
+
+export const changePasswordController = catchAsync(async(req, res) => {
+  const { email, oldPassword, newPassword } = req.body;
+
+  const result = await changePasswordService(email, oldPassword, newPassword);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: result.message,
+    data: ''
   });
 });
 
@@ -53,7 +68,6 @@ export const forgotPasswordController = catchAsync(async (req, res) => {
     data: ''
   });
 });
-
 // Reset Password Controller
 export const resetPasswordController = catchAsync(async (req, res) => {
   const { token, newPassword } = req.body;

@@ -12,4 +12,7 @@ export default {
   JWT_ACCESS_EXPIRES_IN: process.env.JWT_ACCESS_EXPIRES_IN,
   GMAIL: process.env.GMAIL,
   GMAIL_PASS: process.env.GMAIL_PASS,
+  ADMIN_EMAIL: process.env.ADMIN_EMAIL,
+  ADMIN_PASS: process.env.ADMIN_PASS,
+  ADMIN_PHONE: process.env.ADMIN_PHONE,
 };

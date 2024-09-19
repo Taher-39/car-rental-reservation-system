@@ -2,6 +2,7 @@ import { Server } from 'http';
 import mongoose from 'mongoose';
 import config from './app/config';
 import app from '.';
+import { initializeAdminUser } from './app/utils/adminCreate';
 
 let server: Server;
 
@@ -11,6 +12,7 @@ async function main() {
     const connection = await mongoose.connect(config.DB_URL as string);
 
     console.log(`MongoDB Connected: ${connection.connection.host}`);
+    await initializeAdminUser();
     server = app.listen(config.PORT, () => {
       console.log(`App is listening on PORT ${config.PORT}`);
     });
