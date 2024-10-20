@@ -2,7 +2,7 @@ import { Router } from 'express';
 import validateRequest from '../../middlewares/validateRequest';
 import {
   carUpdateValidationSchema,
-  carValidationSchema,
+  carCreateValidationSchema,
 } from './car.validation';
 import auth from '../../middlewares/auth';
 import { returnCarValidationSchema } from '../booking/booking.validation';
@@ -14,13 +14,14 @@ import {
   returnCarController,
   updateCarController,
 } from './car.controller';
+import { USER_ROLE } from '../user/user.constant';
 
 const router = Router();
 
 //return car route
 router.put(
   '/return',
-  auth('admin'),
+  auth(USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN,),
   validateRequest(returnCarValidationSchema),
   returnCarController,
 );
@@ -28,18 +29,18 @@ router.put(
 //car routes
 router.post(
   '/',
-  auth('admin'),
-  validateRequest(carValidationSchema),
+  auth(USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN,),
+  validateRequest(carCreateValidationSchema),
   createCarController,
 );
 router.get('/', getAllCarsController);
 router.get('/:id', getSingleCarController);
 router.put(
   '/:id',
-  auth('admin'),
+  auth(USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN,),
   validateRequest(carUpdateValidationSchema),
   updateCarController,
 );
-router.delete('/:id', auth('admin'), deleteCarController);
+router.delete('/:id', auth(USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN,), deleteCarController);
 
 export const CarRoutes = router;

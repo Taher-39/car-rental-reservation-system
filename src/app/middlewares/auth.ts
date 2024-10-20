@@ -3,11 +3,11 @@ import httpStatus from 'http-status';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import config from '../config';
 import AppError from '../errors/AppError';
-import { TUserRole } from '../modules/user/user.interface';
 import { User } from '../modules/user/user.model';
 import catchAsync from '../utils/catchAsync';
+import { USER_ROLE, USER_STATUS } from '../modules/user/user.constant';
 
-const auth = (...requiredRoles: TUserRole[]) => {
+const auth = (...requiredRoles: (keyof typeof USER_ROLE)[]) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
 
@@ -34,6 +34,7 @@ const auth = (...requiredRoles: TUserRole[]) => {
       token,
       config.JWT_ACCESS_SECRET as string,
     ) as JwtPayload;
+
     const { email, role } = decoded;
     
     // checking if the user is exist
@@ -42,8 +43,14 @@ const auth = (...requiredRoles: TUserRole[]) => {
     if (!user) {
       throw new AppError(httpStatus.NOT_FOUND, 'This user is not found');
     }
-  console.log(role)
-    
+
+    if (user.status === USER_STATUS.BLOCKED) {
+      throw new AppError(httpStatus.UNAUTHORIZED, "User is blocked");
+    }
+    if (user.role !== role) {
+      throw new AppError(httpStatus.UNAUTHORIZED, "You have no access to this route");
+    }
+
     if (requiredRoles && !requiredRoles.includes(role)) {
       throw new AppError(
         httpStatus.UNAUTHORIZED,
@@ -51,7 +58,12 @@ const auth = (...requiredRoles: TUserRole[]) => {
       );
     }
 
-    req.user = decoded as JwtPayload;
+    req.user = {
+      _id: user._id.toString(),
+      role: user.role,
+      email: user.email
+    } as JwtPayload;
+
     next();
   });
 };

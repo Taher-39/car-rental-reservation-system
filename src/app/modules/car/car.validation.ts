@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const carValidationSchema = z.object({
+export const carCreateValidationSchema = z.object({
   body: z.object({
     name: z.string({ required_error: 'Car name is required' }),
     description: z.string({ required_error: 'Car description is required' }),

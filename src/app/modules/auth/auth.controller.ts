@@ -1,8 +1,9 @@
 import httpStatus from 'http-status';
 import sendResponse from '../../utils/sendResponse';
 import catchAsync from '../../utils/catchAsync';
-import { changePasswordService, forgotPasswordService, resetPasswordService, signInService, updateUserService } from './auth.service';
+import { changePasswordService, forgotPasswordService, resetPasswordService, signInService } from './auth.service';
 import { signUpService } from './auth.service';
+import config from '../../config';
 
 export const signUpController = catchAsync(async (req, res) => {
   const result = await signUpService(req.body);
@@ -16,33 +17,25 @@ export const signUpController = catchAsync(async (req, res) => {
 });
 
 export const signInController = catchAsync(async (req, res) => {
-  const { user, accessToken } = await signInService(req.body);
+  const { user, accessToken, refreshToken } = await signInService(req.body);
+
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: config.NODE_ENV === "production",
+  });
 
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
     message: 'User is logged in succesfully!',
-    data: user,
-    token: accessToken,
+    data: {
+      user,
+      accessToken,
+    },
   });
 });
 
-export const updateUserController = catchAsync(async (req, res) => {
-  const { body } = req;
-  const userRole = req.user.role; // Assume req.user contains role information from JWT
-
-  const updatedUser = await updateUserService(body, userRole);
-
-  sendResponse(res, {
-    success: true,
-    statusCode: httpStatus.OK,
-    message: 'User updated successfully.',
-    data: updatedUser
-  });
-});
-
-
-export const changePasswordController = catchAsync(async(req, res) => {
+export const changePasswordController = catchAsync(async (req, res) => {
   const { email, oldPassword, newPassword } = req.body;
 
   const result = await changePasswordService(email, oldPassword, newPassword);

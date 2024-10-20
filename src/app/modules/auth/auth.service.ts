@@ -4,17 +4,21 @@ import { User } from '../user/user.model';
 import { TSingnin } from './auth.interface';
 import config from '../../config';
 import jwt from 'jsonwebtoken';
-import bcrypt from 'bcrypt';
 import { IUser } from '../user/user.interface';
 import crypto from 'crypto';
 import { transporter } from '../../utils/mailTransporter';
+import { USER_ROLE, USER_STATUS } from '../user/user.constant';
+import { isPasswordMatched } from './auth.util';
 
-export const signUpService = async (payload: IUser) => {
+export const signUpService = async (payload: IUser): Promise<any> => {
   // Check if email is already registered
   const existingUser = await User.findOne({ email: payload.email });
   if (existingUser) {
     throw new AppError(httpStatus.CONFLICT, 'Email is already registered');
   }
+
+  //set user role
+  payload.role = USER_ROLE.USER;
 
   // Create new user
   const result = await User.create(payload);
@@ -22,79 +26,76 @@ export const signUpService = async (payload: IUser) => {
 };
 
 export const signInService = async (payload: TSingnin) => {
-  // checking if the user is exist
-  const user = await User.findOne({ email: payload?.email });
+  const user = await User.findOne({ email: payload.email }).select("+password") as IUser;
 
   if (!user) {
-    throw new AppError(httpStatus.NOT_FOUND, 'This user is not found !');
+    throw new AppError(httpStatus.NOT_FOUND,"User not found");
   }
 
-  //checking if the password is correct
-  const isPasswordMatch = await bcrypt.compare(payload?.password, user?.password);
-  console.log(isPasswordMatch)
-  if (!isPasswordMatch) {
-    throw new AppError(httpStatus.FORBIDDEN, 'Password do not matched');
+  if (user.status === USER_STATUS.BLOCKED) {
+    throw new AppError(httpStatus.BAD_REQUEST,"User is blocked");
   }
 
-  //create token and sent to the  client
+  const passwordMatch = await isPasswordMatched(
+    payload.password,
+    user.password
+  );
+
+  if (!passwordMatch) {
+    throw new AppError(httpStatus.FORBIDDEN,"Password not matched");
+  }
+
+    // Increment login count
+    await user.incrementLoginCount();
 
   const jwtPayload = {
-    _id: user._id,
     email: user.email,
-    role: user.role
+    role: user.role,
   };
 
   const accessToken = jwt.sign(jwtPayload, config.JWT_ACCESS_SECRET as string, {
     expiresIn: config.JWT_ACCESS_EXPIRES_IN,
   });
 
+  const refreshToken = jwt.sign(
+    jwtPayload,
+    config.JWT_REFRESH_SECRET as string,
+    {
+      expiresIn: config.JWT_REFRESH_EXPIRES_IN,
+    }
+  );
+
   return {
     user,
     accessToken,
+    refreshToken,
   };
 };
 
-// Update User Service
-export const updateUserService = async (payload: Partial<IUser>, userRole: string) => {
-  const user = await User.findOne({ email: payload?.email });
-  if (!user) {
-    throw new AppError(httpStatus.NOT_FOUND, 'User not found');
-  }
 
-  // Restrict role updates to admin users only
-  if (payload.role && userRole !== 'admin') {
-    throw new AppError(httpStatus.FORBIDDEN, 'Only admin can update roles');
-  }
-
-  // Update user details
-  if (payload.name) user.name = payload.name;
-  if (payload.phone) user.phone = payload.phone;
-  if (payload.image) user.image = payload.image;
-  if (payload.role) user.role = payload.role;
-
-  await user.save();
-
-  return user;
-};
-
-export const changePasswordService = async (email: string, oldPassword: string, newPassword: string) => {
+export const changePasswordService = async (
+  email: string,
+  oldPassword: string,
+  newPassword: string,
+) => {
   // Find the user by email
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email }).select("+password") as IUser;
   if (!user) {
     throw new AppError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  if (user.status === USER_STATUS.BLOCKED) {
+    throw new AppError(httpStatus.BAD_REQUEST,"User is blocked");
   }
 
   // Check if the old password is correct
-  const isOldPasswordValid = await bcrypt.compare(oldPassword, user.password);
+  const isOldPasswordValid = await isPasswordMatched(oldPassword, user.password);
   if (!isOldPasswordValid) {
     throw new AppError(httpStatus.FORBIDDEN, 'Old password is incorrect');
   }
 
-  // Hash the new password
-  const hashedNewPassword = await bcrypt.hash(newPassword, Number(config.BCRYPT_SALT_ROUNDS));
-  
   // Update user's password
-  user.password = hashedNewPassword;
+  user.password = newPassword;
   await user.save();
 
   return { message: 'Password changed successfully!' };
@@ -104,14 +105,20 @@ export const changePasswordService = async (email: string, oldPassword: string, 
 export const forgotPasswordService = async (email: string) => {
   const user = await User.findOne({ email });
   if (!user) {
-    throw new AppError(httpStatus.NOT_FOUND, 'User with this email does not exist');
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      'User with this email does not exist',
+    );
   }
 
   // Generate a password reset token
   const resetToken = crypto.randomBytes(32).toString('hex');
-  const tokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
-  
-  // Save token and expiry time in the user model 
+  const tokenHash = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  // Save token and expiry time in the user model
   user.resetPasswordToken = tokenHash;
   user.resetTokenExpires = new Date(Date.now() + 10 * 60 * 1000); // Token expires in 10 minutes
   await user.save();
@@ -119,7 +126,7 @@ export const forgotPasswordService = async (email: string) => {
   // Send reset link via email
   const resetUrl = `http://localhost:5173/resetPassword/${resetToken}`; //need replace with hosted client
   const message = `Click this link to reset your password: ${resetUrl}`;
-  
+
   await transporter.sendMail({
     to: user.email,
     from: config.GMAIL,
@@ -133,7 +140,10 @@ export const forgotPasswordService = async (email: string) => {
 };
 
 // Reset Password Service
-export const resetPasswordService = async (token: string, newPassword: string) => {
+export const resetPasswordService = async (
+  token: string,
+  newPassword: string,
+) => {
   // Hash the token and find the user by token
   const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
   const user = await User.findOne({
@@ -142,11 +152,14 @@ export const resetPasswordService = async (token: string, newPassword: string) =
   });
 
   if (!user) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'Token is invalid or has expired');
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Token is invalid or has expired',
+    );
   }
 
   // Update password
-  user.password = await bcrypt.hash(newPassword, Number(config.BCRYPT_SALT_ROUNDS));
+  user.password = newPassword;
   user.resetPasswordToken = undefined;
   user.resetTokenExpires = undefined;
   await user.save();

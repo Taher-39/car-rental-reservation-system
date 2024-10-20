@@ -1,18 +1,21 @@
-export interface IUser {
+import { Document, Types } from 'mongoose';
+import { USER_ROLE, USER_STATUS } from './user.constant';
+
+export interface IUser extends Document {
+  _id?: Types.ObjectId;
   name: string;
   email: string;
   password: string;
-  role?: string;
+  role: keyof typeof USER_ROLE;
+  status: keyof typeof USER_STATUS;
   phone?: string;
   image?: string;
-  resetPasswordToken?: string; 
-  resetTokenExpires?: Date;  
+  loginCount?: number; 
+  resetPasswordToken?: string;
+  resetTokenExpires?: Date;
+
+  incrementLoginCount(): Promise<void>;
 }
 
 
-const USER_ROLE = {
-  user: 'user',
-  admin: 'admin',
-} as const;
 
-export type TUserRole = keyof typeof USER_ROLE;

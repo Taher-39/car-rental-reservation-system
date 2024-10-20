@@ -2,8 +2,7 @@ import express from 'express';
 import validateRequest from '../../middlewares/validateRequest';
 import {
   userChangePasswordValidationSchema,
-  userUpdateValidationSchema,
-  userValidationSchema,
+  userCreateValidationSchema,
 } from '../user/user.validation';
 import {
   changePasswordController,
@@ -11,41 +10,34 @@ import {
   resetPasswordController,
   signInController,
   signUpController,
-  updateUserController,
 } from './auth.controller';
 import { signinValidationSchema } from './auth.validation';
 import auth from '../../middlewares/auth';
+import { USER_ROLE } from '../user/user.constant';
 const router = express.Router();
 
-router.post('/signup', validateRequest(userValidationSchema), signUpController);
+router.post('/register', validateRequest(userCreateValidationSchema), signUpController)
 
 router.post(
-  '/signin',
+  '/login',
   validateRequest(signinValidationSchema),
   signInController,
 );
 
 router.patch(
-  '/update',
-  auth('user', 'admin'),
-  validateRequest(userUpdateValidationSchema),
-  updateUserController,
-);
-
-router.patch(
   '/change-password',
-  auth('user', 'admin'),
+  auth(USER_ROLE.USER, USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN),
   validateRequest(userChangePasswordValidationSchema),
   changePasswordController,
 );
 
 // Forgot password - generate token and send email
-router.post('/forgotPassword', auth('user', 'admin'), forgotPasswordController);
+router.post('/forgotPassword', auth(USER_ROLE.USER, USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN), forgotPasswordController);
 
 // Reset password with token
 router.post(
   '/resetPassword/:token',
-  auth('user', 'admin'),
+  auth(USER_ROLE.USER, USER_ROLE.ADMIN, USER_ROLE.SUPER_ADMIN),
   resetPasswordController,
 );
 

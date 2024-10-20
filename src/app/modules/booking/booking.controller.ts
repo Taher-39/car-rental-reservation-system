@@ -6,21 +6,12 @@ import {
   getAllBookingsService,
   getUserBookingsService,
 } from './booking.service';
-import Car from '../car/car.model';
 
 export const createBookingController = catchAsync(async (req, res) => {
   const result = await createBookingService(req.body, req.user._id);
-  if (!result) {
-    return res.status(httpStatus.NOT_FOUND).json({
-      success: false,
-      statusCode: 404,
-      message: 'No Data Found',
-      data: [],
-    });
-  }
   sendResponse(res, {
     success: true,
-    statusCode: httpStatus.OK,
+    statusCode: httpStatus.CREATED,
     message: 'Car booked successfully',
     data: result,
   });
@@ -29,36 +20,21 @@ export const createBookingController = catchAsync(async (req, res) => {
 export const getAllBookingsAdminController = catchAsync(async (req, res) => {
   const { carId, date } = req.query;
   const result = await getAllBookingsService(carId as string, date as string);
-  if (result.length === 0) {
-    return res.status(httpStatus.NOT_FOUND).json({
-      success: false,
-      statusCode: 404,
-      message: 'No Data Found',
-      data: [],
-    });
-  }
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
-    message: 'Bookings retrieved successfully',
+    message: result.length > 0 ? 'Bookings retrieved successfully' : 'No Data Found',
     data: result,
   });
 });
 
 export const getUserBookingsController = catchAsync(async (req, res) => {
-  const result = await getUserBookingsService(req?.user?._id);
-  if (result.length === 0) {
-    return res.status(httpStatus.NOT_FOUND).json({
-      success: false,
-      statusCode: 404,
-      message: 'No Data Found',
-      data: [],
-    });
-  }
+  const result = await getUserBookingsService(req.user._id);
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
-    message: 'My Bookings retrieved successfully',
+    message: result.length > 0 ? 'My Bookings retrieved successfully' : 'No Data Found',
     data: result,
   });
 });
+

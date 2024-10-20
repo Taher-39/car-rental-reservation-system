@@ -22,18 +22,10 @@ export const createCarController = catchAsync(async (req, res) => {
 
 export const getAllCarsController = catchAsync(async (req, res) => {
   const result = await getAllCars();
-  if (!result) {
-    return res.status(httpStatus.NOT_FOUND).json({
-      success: false,
-      statusCode: 404,
-      message: 'No Data Found',
-      data: [],
-    });
-  }
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'Cars retrieved successfully',
+    message: result.length ? 'Cars retrieved successfully' : 'No cars found',
     data: result,
   });
 });
@@ -42,52 +34,30 @@ export const getSingleCarController = catchAsync(async (req, res) => {
   const { id } = req.params;
   const result = await getCarById(id);
 
-  if (!result) {
-    return res.status(httpStatus.NOT_FOUND).json({
-      success: false,
-      statusCode: 404,
-      message: 'No Data Found',
-      data: [],
-    });
-  }
   sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: 'A Car retrieved successfully',
-    data: result,
+    statusCode: result ? httpStatus.OK : httpStatus.NOT_FOUND,
+    success: !!result,
+    message: result ? 'Car retrieved successfully' : 'Car not found',
+    data: result || null,
   });
 });
 
 export const updateCarController = catchAsync(async (req, res) => {
   const { id } = req.params;
   const result = await updateCar(id, req.body);
-  if (!result) {
-    return res.status(httpStatus.NOT_FOUND).json({
-      success: false,
-      statusCode: 404,
-      message: 'No Data Found',
-      data: [],
-    });
-  }
+  
   sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: 'Car updated successfully',
-    data: result,
+    statusCode: result ? httpStatus.OK : httpStatus.NOT_FOUND,
+    success: !!result,
+    message: result ? 'Car updated successfully' : 'Car not found or has been deleted',
+    data: result || null,
   });
 });
 
 export const deleteCarController = catchAsync(async (req, res) => {
   const { id } = req.params;
   const result = await softDeleteCar(id);
-  if (!result) {
-    return res.status(httpStatus.NOT_FOUND).json({
-      success: false,
-      statusCode: 404,
-      message: 'No Data Found',
-      data: [],
-    });
-  }
+  
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
@@ -98,18 +68,12 @@ export const deleteCarController = catchAsync(async (req, res) => {
 
 export const returnCarController = catchAsync(async (req, res) => {
   const result = await returnCarService(req.body);
-  if (!result) {
-    return res.status(httpStatus.NOT_FOUND).json({
-      success: false,
-      statusCode: 404,
-      message: 'No Data Found',
-      data: [],
-    });
-  }
+  
   sendResponse(res, {
     success: true,
-    statusCode: httpStatus.OK,
-    message: 'Car returned successfully',
-    data: result,
+    statusCode: result ? httpStatus.OK : httpStatus.NOT_FOUND,
+    message: result ? 'Car returned successfully' : 'Booking not found',
+    data: result || null,
   });
 });
+
